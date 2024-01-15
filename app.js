@@ -59,7 +59,7 @@ app.use(
   })
 );
 
-// app.use("/", indexRouter);
+app.use("/", indexRouter);
 app.use("/service/auth", authRouter);
 app.use("/service/exam", examRouter);
 app.use("/service/users", usersRouter);

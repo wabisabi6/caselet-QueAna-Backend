@@ -12,7 +12,7 @@ const saltRounds = 10;
 // POST '/auth/signup'
 exports.signUpController = (req, res, next) => {
   // 2 - Destructure the password and username
-  // console.log(req.body);
+  console.log("Request Body Content:", req.body);
   const { username, password, full_name } = req.body;
 
   if (username == undefined) {
@@ -64,7 +64,7 @@ exports.signUpController = (req, res, next) => {
           const token = jwt.sign(data, jwtSecretKey);
           // save user token
 
-          res.json({ succes: true, token: token });
+          res.json({ succes: true, token: token});
         })
         .catch((err) => {
           console.log(err);
@@ -139,7 +139,8 @@ exports.loginController = async (req, res, next) => {
     const token = jwt.sign(data, jwtSecretKey);
     // save user token
 
-    return res.json({ success: true, token: token });
+    return res.json({ success: true, token: token, username: data.username, 
+                      full_name: data.full_name, user_id: data.user_id });
   } else {
     return res.status(401).json({
       success: false,
