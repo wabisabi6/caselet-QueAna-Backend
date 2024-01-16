@@ -12,7 +12,7 @@ const saltRounds = 10;
 // POST '/auth/signup'
 exports.signUpController = (req, res, next) => {
   // 2 - Destructure the password and username
-  console.log("Request Body Content:", req.body);
+  console.log("Req body backend:", req.body);
   const { username, password, full_name } = req.body;
 
   if (username == undefined) {
