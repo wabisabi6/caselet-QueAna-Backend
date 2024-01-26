@@ -82,11 +82,14 @@ exports.createExam = async (req, res, next) => {
   for (let index = 0; index < EXAM_FIELDS.length; index++) {
     const key = EXAM_FIELDS[index];
     // console.log(!body[key]);
-    if (!keys.includes(key) || !body[key]) {
-      console.log(key);
-      return res
-        .status(400)
-        .json({ sucess: false, body: `${key} not found, please enter it ` });
+    if(key != "difficulty")
+    {
+      if (!keys.includes(key) || !body[key]) {
+        console.log(key);
+        return res
+          .status(400)
+          .json({ sucess: false, body: `${key} not found, please enter it ` });
+      }
     }
   }
   const question_bank = await ExamModel.create(body);
