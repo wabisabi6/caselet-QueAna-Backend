@@ -32,7 +32,14 @@ var app = express();
 
 // Connecting to DB
 connection = connectDB();
-app.use(cors());
+
+app.use(cors({
+  origin: ['https://main-deployment-aws-test-admin.d3brix7vti8n8n.amplifyapp.com', 
+           'https://main-deployment-aws-test.d1l6fhyz6awk3.amplifyapp.com']
+}));
+
+
+
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
