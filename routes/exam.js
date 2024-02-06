@@ -11,8 +11,8 @@ var router = express.Router();
 
 // Not needed
 // POST '/auth/signup'
-router.get("/list", getExam);
+router.get("/list/", getExam);
 router.get("/info/:exam_id", getExamDetails);
-router.post("/create", createExam);
+router.post("/create/", createExam);
 router.get("/schedule", checkAuth, getScheduledExam);
 module.exports = router;
