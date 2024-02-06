@@ -14,5 +14,6 @@ var router = express.Router();
 router.get("/list", getExam);
 router.get("/info/:exam_id", getExamDetails);
 router.post("/create", createExam);
+router.options("/create", createExam);
 router.get("/schedule", checkAuth, getScheduledExam);
 module.exports = router;
