@@ -33,10 +33,14 @@ var app = express();
 // Connecting to DB
 connection = connectDB();
 
-app.use(cors({
-  origin: ['https://main-deployment-aws-test-admin.d3brix7vti8n8n.amplifyapp.com', 
-           'https://main-deployment-aws-test.d1l6fhyz6awk3.amplifyapp.com']
-}));
+// Handle OPTIONS request
+app.options('*', (req, res) => {
+  // Set CORS headers
+  res.header('Access-Control-Allow-Origin', 'https://main-deployment-aws-test-admin.d3brix7vti8n8n.amplifyapp.com');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.status(200).send(); // Send 200 OK response
+});
 
 
 
