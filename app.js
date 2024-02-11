@@ -6,8 +6,8 @@ var logger = require("morgan");
 const connectDB = require("./utils/db");
 const dotenv = require("dotenv");
 const colors = require("colors");
-// const bodyParser = require("÷")
 var http = require("http");
+const cors = require('cors');
 
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
@@ -25,46 +25,18 @@ var bodyParser = require("body-parser");
 dotenv.config({ path: ".env" });
 
 console.log(process.env.SESSION_SECRET);
-var cors = require("cors");
 var app = express();
 
-// Setup env file
-
-// Connecting to DB
-
-
-// const { MongoClient, ServerApiVersion } = require('mongodb');
-
-// // Create a MongoClient with a MongoClientOptions object to set the Stable API version
-// const client = new MongoClient(process.env.MONGO_URI, {
-//   serverApi: {
-//     version: ServerApiVersion.v1,
-//     strict: true,
-//     deprecationErrors: true,
-//   }
-// });
-
-// async function run() {
-//   try {
-//     // Connect the client to the server	(optional starting in v4.7)
-//     await client.connect();
-//     // Send a ping to confirm a successful connection
-//     await client.db("admin").command({ ping: 1 });
-//     console.log("Pinged your deployment. You successfully connected to MongoDB!");
-//   } finally {
-//     // Ensures that the client will close when you finish/error
-//     await client.close();
-//   }
-// }
-// run().catch(console.dir);
-
-
-
-
-
-
 connection = connectDB();
-app.use(cors());
+
+// Configure CORS
+const corsOptions = {
+  origin: 'https://main-deployment-aws-test-admin.d3brix7vti8n8n.amplifyapp.com',
+  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+};
+
+app.use(cors(corsOptions));
+
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
