@@ -11,11 +11,10 @@ const connectDB = async function run() {
     await mongoose.connection.db.admin().command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
     return conn;
-  } finally {
+  } catch(err) {
     // Ensures that the client will close when you finish/error
-    await mongoose.disconnect();
+    console.log("Error in connection : ", err)
   }
 }
-// connectDB().catch(console.dir);
 
 module.exports = connectDB;
