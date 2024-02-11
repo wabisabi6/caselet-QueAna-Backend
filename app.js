@@ -32,7 +32,9 @@ connection = connectDB();
 // Configure CORS
 const corsOptions = {
   origin: 'https://main-deployment-aws-test-admin.d3brix7vti8n8n.amplifyapp.com',
-  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+  optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+  credentials: true, // Considering credentials are important for your requests
+  allowedHeaders: ['Content-Type', 'Authorization'], // Ensure 'Authorization' is allowed
 };
 
 app.use(cors(corsOptions));
