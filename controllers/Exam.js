@@ -76,26 +76,15 @@ exports.getScheduledExam = async (req, res, next) => {
 exports.createExam = async (req, res, next) => {
   console.log(req.body);
 
-  if (req.method == "OPTIONS") {
-    const response = {
-      statusCode: 200,
-      headers: {
-        
-          "Access-Control-Allow-Headers" : "Content-Type",
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "OPTIONS,POST,GET"
-      },
-      body: JSON.stringify('Hello from Lambda!'),
-    };
-    return response;
-  }
+  res.header('Access-Control-Allow-Origin', 'https://main-deployment-aws-test-admin.d3brix7vti8n8n.amplifyapp.com');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   let body = req.body;
   keys = Object.keys(body);
   console.log(keys, "This is dflka");
   for (let index = 0; index < EXAM_FIELDS.length; index++) {
     const key = EXAM_FIELDS[index];
-    // console.log(!body[key]);
     if(key != "difficulty")
     {
       if (!keys.includes(key) || !body[key]) {
