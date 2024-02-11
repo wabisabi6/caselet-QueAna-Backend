@@ -16,6 +16,5 @@ const connectDB = async function run() {
     console.log("Error in connection : ", err)
   }
 }
-// connectDB().catch(console.dir);
 
 module.exports = connectDB;
