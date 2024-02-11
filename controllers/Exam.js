@@ -76,6 +76,10 @@ exports.getScheduledExam = async (req, res, next) => {
 exports.createExam = async (req, res, next) => {
   console.log(req.body);
 
+  if (req.method == "OPTIONS") {
+    return  res.status(200);
+  }
+
   let body = req.body;
   keys = Object.keys(body);
   console.log(keys, "This is dflka");
@@ -94,5 +98,5 @@ exports.createExam = async (req, res, next) => {
   }
   const question_bank = await ExamModel.create(body);
 
-  res.status(200).json({ success: true, body: question_bank });
+  return res.status(200).json({ success: true, body: question_bank });
 };
