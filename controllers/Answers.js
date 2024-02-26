@@ -9,6 +9,7 @@ exports.getAnswers = async (req, res, next) => {
 };
 
 exports.createAnswers = async (req, res, next) => {
+  console.log("Create Answers called in backend")
   let body = req.body;
   keys = Object.keys(body);
   for (let index = 0; index < ANSWER_FIELD.length; index++) {
