@@ -16,6 +16,32 @@ exports.getExam = async (req, res, next) => {
   return res.status(200).json({ sucess: true, exam });
 };
 
+
+exports.deleteExam = async (req, res, next) => {
+  console.log("Delete Exam from Backend was called");
+
+  if (!req.params.exam_id) {
+    return res.status(400).json({ success: false, message: "Exam id is required" });
+  }
+
+  try {
+    // Attempt to delete the exam by its ID
+    const result = await ExamModel.deleteOne({ _id: req.params.exam_id });
+
+    // If the exam was not found and deleted, result.deletedCount will be 0
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ success: false, message: "Exam not found" });
+    }
+
+    // If the delete operation was successful, return a success response
+    return res.status(200).json({ success: true, message: "Exam deleted successfully" });
+    
+  } catch (error) {
+    // If an error occurs, return an error response
+    return res.status(500).json({ success: false, message: "An error occurred while deleting the exam" });
+  }
+}
+
 exports.getExamDetails = async (req, res, next) => {
   // console.log(req);
   if (!req.params.exam_id) {
