@@ -11,7 +11,7 @@ const responseSchema = new Schema(
       type: mongoose.Types.ObjectId,
     },
     answer_id: {
-      type: mongoose.Types.ObjectId,
+      type: [mongoose.Types.ObjectId],
     },
     user_id: {
       type: mongoose.Types.ObjectId,
