@@ -44,6 +44,7 @@ exports.getQuestionWiseResponse = async (req, res, next) => {
   const userId = await fetchUserIdFromToken(
     req.headers.authorization.split(" ")[1]
   );
+  console.log("----User ID was extracted----")
   const response = await ResponseModel.aggregate([
     {
       $match: {
@@ -78,6 +79,21 @@ exports.getQuestionWiseResponse = async (req, res, next) => {
       },
     },
     {
+      $group: {
+        _id: "$_id",
+        originalDoc: { $first: "$$ROOT" },
+        answers: { $push: "$answer" }
+      }
+    },
+    {
+      $addFields: {
+        "originalDoc.answer": "$answers" // Integrate the 'answers' array back into the original document structure
+      }
+    },
+    {
+      $replaceRoot: { newRoot: "$originalDoc" } // Replace the root to cleanup the structure
+    },
+    {
       $lookup: {
         from: "exams",
         localField: "exam_id",
@@ -91,23 +107,30 @@ exports.getQuestionWiseResponse = async (req, res, next) => {
       },
     },
   ]);
+
+  console.log("response value was created", response)
+  console.log("answer object content in response: ", response[0].answer)
   let questionList = [];
   let correctList = [];
   let finalOutPut = [];
   let questionCount = 0;
   if (response.length > 0) {
     console.log("easy");
-    if (parseInt(response[0].exam.total_questions) != response.length) {
-      console.log(parseInt(response[0].exam.total_questions, response.length));
-      return res.status(400).json({ success: false, message: "empty" });
-    } else {
-      questionCount = response.length;
+
+    console.log("total questions in response: ", parseInt(response[0].exam.total_questions))
+    console.log("total length of response: ", response.length)
+    // if (parseInt(response[0].exam.total_questions) != response.length) {
+    //   console.log(parseInt(response[0].exam.total_questions, response.length));
+    //   return res.status(400).json({ success: false, message: "empty" });
+    // } else {
+      console.log("Everything alright!")
+      //questionCount = response.length;
       for (let index = 0; index < response.length; index++) {
         const element = response[index];
         questionList.push(element.question.question_no);
         correctList.push(element.answer.is_correct);
       }
-    }
+    // }
 
     for (
       let index = 1;
@@ -127,6 +150,8 @@ exports.getQuestionWiseResponse = async (req, res, next) => {
 };
 
 exports.createRespose = async (req, res, next) => {
+
+  console.log("Response is being created based on user's answer.")
   const userId = await fetchUserIdFromToken(
     req.headers.authorization.split(" ")[1]
   );
@@ -135,6 +160,7 @@ exports.createRespose = async (req, res, next) => {
   let body = req.body;
   body.user_id = userId;
 
+  console.log("The body of the submitted answer: ")
   console.log(body, "Body");
   keys = Object.keys(body);
   for (let index = 0; index < RESPONSE_FIELD.length; index++) {
@@ -151,17 +177,17 @@ exports.createRespose = async (req, res, next) => {
 
   //Check if response already donefor that question
 
-  const responseCheck = await ResponseModel.findOne({
-    user_id: userId,
-    question_id: body.question_id,
-  });
+  // const responseCheck = await ResponseModel.findOne({
+  //   user_id: userId,
+  //   question_id: body.question_id,
+  // });
 
-  if (!(responseCheck == null)) {
-    return res.status(400).json({
-      success: false,
-      body: "Already submitted response for this question",
-    });
-  }
+  // if (!(responseCheck == null)) {
+  //   return res.status(400).json({
+  //     success: false,
+  //     body: "Already submitted response for this question",
+  //   });
+  // }
 
   const response = await ResponseModel.create(body);
   res.status(200).json({ sucess: true, response });
