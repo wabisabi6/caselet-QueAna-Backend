@@ -37,7 +37,11 @@ exports.getQuestionById = async (req, res, next) => {
 exports.createQuestions = async (req, res, next) => {
   let body = req.body;
   keys = Object.keys(body);
-  console.log(keys, "This is dflka");
+  console.log(keys, "This is question creation in backend.");
+  console.log("This is the question body : ", body)
+
+
+
   for (let index = 0; index < QUESTION_FIELDS.length; index++) {
     const key = QUESTION_FIELDS[index];
 
