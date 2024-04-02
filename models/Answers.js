@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const answersSchema = new Schema(
   {
     answer: String,
-    option: { type: String, enum: ["A", "B", "C", "D"] },
+    option:[String],
     question_id: {
       type: mongoose.Types.ObjectId,
     },
