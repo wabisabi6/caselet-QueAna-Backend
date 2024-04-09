@@ -4,7 +4,7 @@ var base64ToImage = require("base64-to-image");
 const { v4: uuidv4 } = require("uuid");
 // c { nanoid } from "nanoid";
 const { Types } = require("mongoose");
-const QUESTION_FIELDS = ["question", "exam_id", "explain", "question_no"];
+const QUESTION_FIELDS = ["question", "exam_id", "explain", "question_no", "feedback"];
 const { fetchUserIdFromToken } = require("../middleware/auth_validate");
 const ResponseModel = require("../models/Response");
 const ExamModel = require("../models/Exams");
@@ -42,16 +42,24 @@ exports.createQuestions = async (req, res, next) => {
 
 
 
-  for (let index = 0; index < QUESTION_FIELDS.length; index++) {
-    const key = QUESTION_FIELDS[index];
+  try{
 
-    // console.log(!body[key]);
-    if (!keys.includes(key) || !body[key]) {
-      console.log(key);
-      return res
-        .status(400)
-        .json({ sucess: false, body: `${key} not found, please enter it ` });
+    for (let index = 0; index < QUESTION_FIELDS.length; index++) {
+      const key = QUESTION_FIELDS[index];
+
+      // console.log(!body[key]);
+      if (!keys.includes(key) || !body[key]) {
+        console.log(key);
+        return res
+          .status(400)
+          .json({ sucess: false, body: `${key} not found, please enter it ` });
+      }
     }
+
+  }
+  catch(error){
+    console.log("Error : ", error)
+
   }
 
   //Image upload herer
