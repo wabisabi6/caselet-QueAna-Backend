@@ -27,6 +27,8 @@ const userLogSchema = new Schema(
         "Start",
         "Stop",
         "Login",
+        "Pre-Reflection",
+        "Comment",
       ],
     },
     action: {
