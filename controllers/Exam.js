@@ -1,5 +1,6 @@
 const { errResponse } = require("../middleware/ErrorResponse");
 const ExamModel = require("../models/Exams");
+const ScheduledExamModel = require("../models/ScheduledExam");
 
 const { Types } = require("mongoose");
 const EXAM_FIELDS = [
@@ -97,6 +98,33 @@ exports.getScheduledExam = async (req, res, next) => {
   ]);
 
   return res.status(200).json({ success: true, exam });
+};
+
+
+exports.getScheduledExamsList = async (req, res, next) => {
+  const exam = await ScheduledExamModel.find();
+  return res.status(200).json({ sucess: true, exam });
+};
+
+//Get list of exams
+exports.scheduleExam = async (req, res, next) => {
+  try {
+    const { examName, selectedExamId, start_time, end_time } = req.body;
+    
+    const newScheduledExam = new ScheduledExamModel({
+        name: examName,
+        start_time: new Date(start_time),
+        end_time: new Date(end_time),
+        selectedExamId: selectedExamId
+    });
+
+    await newScheduledExam.save();
+
+    res.status(200).json({ success: true});
+    } catch (error) {
+        console.error('Error creating scheduled exam:', error);
+        res.status(500).json({ message: "Failed to create scheduled exam", error: error.message });
+    }
 };
 
 exports.createExam = async (req, res, next) => {
