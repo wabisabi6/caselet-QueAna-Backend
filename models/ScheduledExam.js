@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
+require('./Exams');
 
 const scheduledExamSchema = new Schema(
   {
@@ -11,7 +12,8 @@ const scheduledExamSchema = new Schema(
       type: Date,
     },
     selectedExamId: {
-      type: Schema.Types.ObjectId,  
+      type: mongoose.Types.ObjectId,
+      ref: "exam"  // Reference the Exam model
     }
   },
   {

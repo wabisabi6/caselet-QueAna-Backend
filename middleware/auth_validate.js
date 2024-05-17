@@ -7,6 +7,7 @@ const checkAuth = (req, res, next) => {
   console.log("Startted");
   if (!req.headers.authorization) {
     console.log("Valud");
+    console.log("401 error: No header in request header")
     return res
       .status(401)
       .json({ success: false, message: "Authentication needed." });
@@ -16,6 +17,7 @@ const checkAuth = (req, res, next) => {
   let details = req.headers.authorization;
   let token = details.split(" ");
   if (token.length != 2) {
+    console.log("401 error: Token length is not equal to 2")
     return res
       .status(401)
       .json({ success: false, message: "Authentication needed." });
@@ -26,11 +28,13 @@ const checkAuth = (req, res, next) => {
   console.log(decodedData, "Dexcoed data");
 
   if (decodedData == null) {
+    console.log("401 error: Decoded data is null")
     return res
       .status(401)
       .json({ success: false, message: "Authentication needed." });
   }
   if (!decodedData.user_id) {
+    console.log("401 error: Decoded Data is not user id")
     return res
       .status(401)
       .json({ success: false, message: "Authentication needed." });

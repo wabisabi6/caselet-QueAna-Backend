@@ -2,13 +2,14 @@ const QuestionsModel = require("../models/Questions");
 const fs = require("fs");
 var base64ToImage = require("base64-to-image");
 const { v4: uuidv4 } = require("uuid");
-// c { nanoid } from "nanoid";
 const { Types } = require("mongoose");
 const QUESTION_FIELDS = ["question", "exam_id", "explain", "question_no", "feedback"];
 const { fetchUserIdFromToken } = require("../middleware/auth_validate");
 const ResponseModel = require("../models/Response");
 const ExamModel = require("../models/Exams");
+const ScheduledExamModel = require("../models/ScheduledExam");
 const BehaviourModel = require("../models/Behaviour");
+const mongoose = require("mongoose");
 
 exports.getQuestions = async (req, res, next) => {
   const questions = await QuestionsModel.find({
@@ -39,8 +40,6 @@ exports.createQuestions = async (req, res, next) => {
   keys = Object.keys(body);
   console.log(keys, "This is question creation in backend.");
   console.log("This is the question body : ", body)
-
-
 
   try{
 
@@ -97,93 +96,16 @@ exports.updateImagesForQuestion = async (req, res, next) => {
   );
 };
 
-//Get question for each user [OLD]
-// exports.getExamQuestion = async (req, res, next) => {
-//   const userId = await fetchUserIdFromToken(
-//     req.headers.authorization.split(" ")[1]
-//   );
-//   let examID = req.query.exam_id;
-
-//   const fetchExam = await ExamModel.findOne({ _id: examID });
-//   if (fetchExam == null) {
-//     return res
-//       .status(401)
-//       .json({ success: false, message: "Exam does not exists" });
-//   }
-
-//   if (fetchExam.start_time < new Date() && new Date() < fetchExam.end_time) {
-//     console.log(fetchExam.start_time < new Date());
-//   } else {
-//     console.log(fetchExam.start_time < new Date());
-//     return res.status(401).json({
-//       success: false,
-//       message: "Exam is either completed or not started.",
-//     });
-//   }
-
-//   //CHECK IF BEHAVIOUR
-//   const behaviour = await BehaviourModel.find({
-//     exam_id: examID,
-//     user_id: userId,
-//   });
-
-//   if (behaviour.length == 0) {
-//     return res.status(400).json({
-//       success: false,
-//       message: "Reflection Required",
-//     });
-//   }
-
-//   //Fetch user last reponse.
-//   const response = await ResponseModel.aggregate([
-//     { $match: { exam_id: examID, user_id: userId } },
-//     {
-//       $sort: { created_on: -1 },
-//     },
-//   ]);
-
-//   if (response.length == 0) {
-//     //This is the first question of exam
-//     const question = await QuestionsModel.aggregate(
-//       questionAggregation(examID, 1)
-//     );
-
-//     if (question.length == 0) {
-//       return res.status(401).json({
-//         success: false,
-//         message: "Questions does not exists in this exam  ",
-//       });
-//     }
-
-//     return res.status(200).json({
-//       success: false,
-//       question: question[0],
-//     });
-//   } else {
-//     let lastQuestionId = response[0].question_id;
-
-//     let lastAttemptedQuestion = await QuestionsModel.findOne({
-//       _id: lastQuestionId,
-//     });
-
-//     //This is the next question of exam
-//     let nextQuestion = await QuestionsModel.aggregate(
-//       questionAggregation(examID, lastAttemptedQuestion.question_no + 1)
-//     );
-
-//     console.log(nextQuestion);
-//     return res.status(200).json({
-//       success: false,
-//       question: nextQuestion,
-//     });
-//   }
-// };
 exports.getExamQuestion = async (req, res, next) => {
   const userId = await fetchUserIdFromToken(
     req.headers.authorization.split(" ")[1]
   );
   let examID = req.query.exam_id;
+  console.log("Type of req.query.exam_id", typeof req.query.exam_id)
+
   let questionNo = req.query.question_no;
+  console.log("Type of req.query.question_no", typeof req.query.question_no)
+
   if (!questionNo) {
     return res
       .status(401)
@@ -191,6 +113,8 @@ exports.getExamQuestion = async (req, res, next) => {
   }
 
   const fetchExam = await ExamModel.findOne({ _id: examID });
+  const fetchScheduledExam = await ScheduledExamModel.findOne({selectedExamId: examID});
+
   if (fetchExam == null) {
     return res
       .status(401)
@@ -202,13 +126,17 @@ exports.getExamQuestion = async (req, res, next) => {
       .status(401)
       .json({ success: false, message: "Question no is invalid" });
   }
-  if (fetchExam.start_time < new Date() && new Date() < fetchExam.end_time) {
-    console.log(fetchExam.start_time < new Date());
+
+  console.log("Start Time: ", fetchScheduledExam.start_time)
+  console.log("End Time: ", fetchScheduledExam.end_time)
+
+  if (fetchScheduledExam.start_time < new Date() && new Date() < fetchScheduledExam.end_time) {
+    console.log(fetchScheduledExam.start_time < new Date());
   } else {
-    console.log(fetchExam.start_time < new Date());
+    console.log(fetchScheduledExam.start_time < new Date());
     return res.status(401).json({
       success: false,
-      message: "Exam is either completed or not started.",
+      message: "Exam is either completed or not started. Line 211",
     });
   }
 
@@ -218,6 +146,8 @@ exports.getExamQuestion = async (req, res, next) => {
     user_id: userId,
   });
 
+  console.log("Behaviour stage completed")
+
   if (behaviour.length == 0) {
     return res.status(400).json({
       success: false,
@@ -225,17 +155,23 @@ exports.getExamQuestion = async (req, res, next) => {
     });
   }
 
+  console.log("Reflection Required stage completed")
+
   //This is the next question of exam
   console.log("exam", examID, questionNo);
+
   let nextQuestion = await QuestionsModel.aggregate(
     questionAggregation(examID, questionNo)
   );
+
+  console.log("Next question data:", nextQuestion);
 
   return res.status(200).json({
     success: true,
     question: nextQuestion[0],
   });
 };
+
 exports.getExamQuestionResult = async (req, res, next) => {
   const userId = await fetchUserIdFromToken(
     req.headers.authorization.split(" ")[1]
@@ -249,6 +185,8 @@ exports.getExamQuestionResult = async (req, res, next) => {
   }
 
   const fetchExam = await ExamModel.findOne({ _id: examID });
+  const fetchScheduledExam = await ScheduledExamModel.findOne({selectedExamId: examID});
+
   if (fetchExam == null) {
     return res
       .status(401)
@@ -260,13 +198,13 @@ exports.getExamQuestionResult = async (req, res, next) => {
       .status(401)
       .json({ success: false, message: "Question no is invalid" });
   }
-  if (fetchExam.start_time < new Date() && new Date() < fetchExam.end_time) {
-    console.log(fetchExam.start_time < new Date());
+  if (fetchScheduledExam.start_time < new Date() && new Date() < fetchScheduledExam.end_time) {
+    console.log(fetchScheduledExam.start_time < new Date());
   } else {
-    console.log(fetchExam.start_time < new Date());
+    console.log(fetchScheduledExam.start_time < new Date());
     return res.status(401).json({
       success: false,
-      message: "Exam is either completed or not started.",
+      message: "Exam is either completed or not started. Line 269",
     });
   }
 
@@ -293,6 +231,7 @@ exports.getExamQuestionResult = async (req, res, next) => {
     question: nextQuestion[0],
   });
 };
+
 const questionAggregation = (exam_id, question_no) => {
   return [
     {
@@ -341,6 +280,7 @@ const questionAggregation = (exam_id, question_no) => {
     },
   ];
 };
+
 const questionAggregationWithSolution = (exam_id, question_no) => {
   return [
     {
