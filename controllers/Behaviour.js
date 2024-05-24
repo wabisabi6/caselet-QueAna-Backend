@@ -7,6 +7,9 @@ exports.getUserBehaviour = async (req, res, next) => {
   const userId = await fetchUserIdFromToken(
     req.headers.authorization.split(" ")[1]
   );
+
+  console.log("----User ID Value -----", userId)
+  console.log("----Exam ID Value -----", req.query.exam_id)
   let examID = req.query.exam_id;
 
   //CHECK IF BEHAVIOUR

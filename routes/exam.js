@@ -5,6 +5,8 @@ const {
   getExamDetails,
   deleteExam,
   getScheduledExam,
+  getScheduledExamsList,
+  scheduleExam,
 } = require("../controllers/Exam");
 const { checkAuth } = require("../middleware/auth_validate");
 
@@ -17,4 +19,8 @@ router.get("/info/:exam_id", getExamDetails);
 router.get("/delete/:exam_id", deleteExam);
 router.post("/create", createExam);
 router.get("/schedule", checkAuth, getScheduledExam);
+
+//newly added scheduleExam
+router.post("/scheduleExam", scheduleExam)
+router.get("/getScheduledExamsList", getScheduledExamsList)
 module.exports = router;

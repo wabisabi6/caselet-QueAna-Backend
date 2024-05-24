@@ -114,23 +114,18 @@ exports.getQuestionWiseResponse = async (req, res, next) => {
   let correctList = [];
   let finalOutPut = [];
   let questionCount = 0;
-  if (response.length > 0) {
+  if (response.length > 0) 
+  {
     console.log("easy");
 
     console.log("total questions in response: ", parseInt(response[0].exam.total_questions))
     console.log("total length of response: ", response.length)
-    // if (parseInt(response[0].exam.total_questions) != response.length) {
-    //   console.log(parseInt(response[0].exam.total_questions, response.length));
-    //   return res.status(400).json({ success: false, message: "empty" });
-    // } else {
-      console.log("Everything alright!")
-      //questionCount = response.length;
-      for (let index = 0; index < response.length; index++) {
-        const element = response[index];
-        questionList.push(element.question.question_no);
-        correctList.push(element.answer.is_correct);
-      }
-    // }
+    console.log("Everything alright!")
+    for (let index = 0; index < response.length; index++) {
+      const element = response[index];
+      questionList.push(element.question.question_no);
+      correctList.push(element.answer.is_correct);
+    }
 
     for (
       let index = 1;
@@ -166,7 +161,6 @@ exports.createRespose = async (req, res, next) => {
   for (let index = 0; index < RESPONSE_FIELD.length; index++) {
     const key = RESPONSE_FIELD[index];
 
-    // console.log(!body[key]);
     if (!keys.includes(key) || !body[key]) {
       console.log(key);
       return res
@@ -174,20 +168,6 @@ exports.createRespose = async (req, res, next) => {
         .json({ sucess: false, body: `${key} not found, please enter it ` });
     }
   }
-
-  //Check if response already donefor that question
-
-  // const responseCheck = await ResponseModel.findOne({
-  //   user_id: userId,
-  //   question_id: body.question_id,
-  // });
-
-  // if (!(responseCheck == null)) {
-  //   return res.status(400).json({
-  //     success: false,
-  //     body: "Already submitted response for this question",
-  //   });
-  // }
 
   const response = await ResponseModel.create(body);
   res.status(200).json({ sucess: true, response });

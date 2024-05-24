@@ -1,11 +1,11 @@
 const { errResponse } = require("../middleware/ErrorResponse");
+const mongoose = require("mongoose");
 const ExamModel = require("../models/Exams");
+const ScheduledExamModel = require("../models/ScheduledExam");
 
 const { Types } = require("mongoose");
 const EXAM_FIELDS = [
   "name",
-  "start_time",
-  "end_time",
   "problem_context",
   "data_summary",
   "difficulty",
@@ -17,7 +17,8 @@ exports.getExam = async (req, res, next) => {
 };
 
 
-exports.deleteExam = async (req, res, next) => {
+exports.deleteExam = async (req, res, next) => 
+{
   console.log("Delete Exam from Backend was called");
 
   if (!req.params.exam_id) {
@@ -42,7 +43,8 @@ exports.deleteExam = async (req, res, next) => {
   }
 }
 
-exports.getExamDetails = async (req, res, next) => {
+exports.getExamDetails = async (req, res, next) => 
+{
   // console.log(req);
   if (!req.params.exam_id) {
     return res.status(400).json({ sucess: false, exam: "Exam id is invalid" });
@@ -79,24 +81,62 @@ exports.getExamDetails = async (req, res, next) => {
   return res.status(200).json({ sucess: true, exam });
 };
 
-//Get list of exams
 exports.getScheduledExam = async (req, res, next) => {
-  const exam = await ExamModel.aggregate([
-    {
-      $match: {
-        end_time: {
-          $gte: new Date(),
-        },
-      },
-    },
-    {
-      $sort: {
-        start_time: -1,
-      },
-    },
-  ]);
 
-  return res.status(200).json({ success: true, exam });
+  const now = new Date();
+
+  ScheduledExamModel.find({
+    start_time: { $lte: now },
+    end_time: { $gte: now }
+  })
+  .populate('selectedExamId')
+  .exec((err, scheduledExams) => {
+    if (err) {
+      console.error('Error fetching scheduled exams:', err);
+      return res.status(500).json({ success: false, message: 'Error fetching scheduled exams' });
+    } else {
+
+      const exams = scheduledExams.map(se => {
+        return {
+          _id: se.selectedExamId._id,  // Directly use _id from the populated Exam
+          name: se.selectedExamId.name,
+          start_time: se.start_time,
+          end_time: se.end_time,
+          // Add other fields from either the scheduled exam or the populated exam as needed
+        };
+      });
+      // Assuming you want to return all exams
+      console.log('Exam Details:', exams);
+      return res.status(200).json({ success: true, exams });
+    }
+  });
+
+};
+
+exports.getScheduledExamsList = async (req, res, next) => {
+  const exam = await ScheduledExamModel.find();
+  return res.status(200).json({ sucess: true, exam });
+};
+
+//Get list of exams
+exports.scheduleExam = async (req, res, next) => {
+  try {
+    const { examName, selectedExamId, start_time, end_time } = req.body;
+    
+    const newScheduledExam = new ScheduledExamModel({
+        name: examName,
+        start_time: new Date(start_time),
+        end_time: new Date(end_time),
+        selectedExamId: selectedExamId
+    });
+
+    await newScheduledExam.save();
+
+    res.status(200).json({ success: true});
+    } catch (error) {
+        console.error('Error creating scheduled exam:', error);
+        res.status(500).json({ message: "Failed to create scheduled exam", error: error.message });
+    }
 };
 
 exports.createExam = async (req, res, next) => {
