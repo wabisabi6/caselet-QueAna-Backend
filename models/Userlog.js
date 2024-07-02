@@ -55,3 +55,7 @@ const userLogSchema = new Schema(
 const UserlogModel = mongoose.model("user_log", userLogSchema);
 
 module.exports = UserlogModel;
+
+
+//Navigation : From, to with timestamp (User_id, practice_id, )
+//Page Activity: User Input, Input field name, input field value
