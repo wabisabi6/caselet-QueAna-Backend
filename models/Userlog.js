@@ -19,16 +19,19 @@ const userLogSchema = new Schema(
       enum: [
         "Search",
         "Click",
-        "Page Jump",
-        "Field Value",
-        "Next",
-        "Back",
         "Submit",
         "Start",
         "Stop",
         "Login",
         "Pre-Reflection",
+        "Post-Reflection",
+        "Confidence",
+        "Answer Option",
         "Comment",
+        "Answer option",
+        "Navigating from",
+        "Navigated to",
+        "Logout"
       ],
     },
     action: {

@@ -45,7 +45,6 @@ exports.deleteExam = async (req, res, next) =>
 
 exports.getExamDetails = async (req, res, next) => 
 {
-  // console.log(req);
   if (!req.params.exam_id) {
     return res.status(400).json({ sucess: false, exam: "Exam id is invalid" });
   }
