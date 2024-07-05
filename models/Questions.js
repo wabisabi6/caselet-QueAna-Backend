@@ -16,9 +16,6 @@ const questionSchema = new Schema(
     },
     explain: {
       type: String,
-    },
-    feedback: {
-      type: String,
     }
   },
   {
