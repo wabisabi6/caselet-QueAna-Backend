@@ -14,7 +14,15 @@ const behaviourSchema = new Schema(
       type: String,
       default: "",
     },
-    post_reflection: {
+    post_reflection_difficulty: {
+      type: String,
+      default: "",
+    },
+    post_reflection_interest: {
+      type: String,
+      default: "",
+    },
+    post_reflection_helpfulness: {
       type: String,
       default: "",
     },
