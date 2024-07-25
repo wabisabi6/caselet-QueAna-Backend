@@ -55,7 +55,10 @@ exports.updateBehaviour = async (req, res, next) => {
   console.log(req.body.behavour_id);
   const Behaviour = await BehaviourModel.updateOne(
     { _id: Types.ObjectId(req.body.behavour_id) },
-    { $set: { post_reflection: req.body.post_reflection } }
+    { $set: { post_reflection_difficulty: req.body.post_reflection_difficulty,
+              post_reflection_interest: req.body.post_reflection_interest,
+              post_reflection_helpfulness: req.body.post_reflection_helpfulness,
+     } }
   );
 
   console.log(req.body, Behaviour);
