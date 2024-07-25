@@ -11,8 +11,22 @@ const behaviourSchema = new Schema(
       type: mongoose.Types.ObjectId,
     },
     pre_reflection: {
-      type: String,
-      default: "",
+      familiarity: {
+        type: String,
+        default: "",
+      },
+      frequency: {
+        type: String,
+        default: "",
+      },
+      competence: {
+        type: String,
+        default: "",
+      },
+      skills: {
+        type: String,
+        default: "",
+      }
     },
     post_reflection_difficulty: {
       type: String,

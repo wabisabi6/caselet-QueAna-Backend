@@ -1,7 +1,11 @@
 const { Types } = require("mongoose");
 const { fetchUserIdFromToken } = require("../middleware/auth_validate");
 const BehaviourModel = require("../models/Behaviour");
-const BEHAVIOUR_FIELDS = ["exam_id", "pre_reflection"];
+const BEHAVIOUR_FIELDS = ["exam_id", 
+  "pre_reflection.familiarity",
+  "pre_reflection.frequency",
+  "pre_reflection.competence",
+  "pre_reflection.skills"];
 
 exports.getUserBehaviour = async (req, res, next) => {
   const userId = await fetchUserIdFromToken(
@@ -34,16 +38,22 @@ exports.createBehaviour = async (req, res, next) => {
     req.headers.authorization.split(" ")[1]
   );
   body.user_id = userId;
-  keys = Object.keys(body);
+
   for (let index = 0; index < BEHAVIOUR_FIELDS.length; index++) {
     const key = BEHAVIOUR_FIELDS[index];
+    const keyParts = key.split(".");
+    let value = body;
 
-    // console.log(!body[key]);
-    if (!keys.includes(key) || !body[key]) {
+    for (let part of keyParts) {
+      value = value[part];
+      if (value === undefined) break;
+    }
+
+    if (value === undefined || value === "") {
       console.log(key);
       return res
         .status(400)
-        .json({ sucess: false, body: `${key} not found, please enter it ` });
+        .json({ success: false, body: `${key} not found, please enter it ` });
     }
   }
 
