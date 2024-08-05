@@ -16,6 +16,14 @@ const questionSchema = new Schema(
     },
     explain: {
       type: String,
+    },
+    post_reflection_explanation_understanding: {
+      type: String,
+      default: ""
+    },
+    post_reflection_explanation_clarity: {
+      type: String,
+      default: ""
     }
   },
   {
