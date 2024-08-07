@@ -94,16 +94,23 @@ exports.getScheduledExam = async (req, res, next) => {
       console.error('Error fetching scheduled exams:', err);
       return res.status(500).json({ success: false, message: 'Error fetching scheduled exams' });
     } else {
+      console.log('Scheduled Exams:', scheduledExams);
 
       const exams = scheduledExams.map(se => {
-        return {
-          _id: se.selectedExamId._id,  // Directly use _id from the populated Exam
-          name: se.selectedExamId.name,
-          start_time: se.start_time,
-          end_time: se.end_time,
-          // Add other fields from either the scheduled exam or the populated exam as needed
-        };
-      });
+        if (se.selectedExamId) {
+          return {
+            _id: se.selectedExamId._id,  // Directly use _id from the populated Exam
+            name: se.selectedExamId.name,
+            start_time: se.start_time,
+            end_time: se.end_time,
+            // Add other fields from either the scheduled exam or the populated exam as needed
+          };
+        } else {
+          console.warn('Scheduled exam with missing selectedExamId:', se._id);
+          return null;
+        }
+      }).filter(exam => exam !== null);  // Filter out any null values
+      
       // Assuming you want to return all exams
       console.log('Exam Details:', exams);
       return res.status(200).json({ success: true, exams });
