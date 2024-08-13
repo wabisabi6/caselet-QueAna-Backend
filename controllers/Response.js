@@ -1,11 +1,10 @@
 const ResponseModel = require("../models/Response");
-const RESPONSE_FIELD = [
+const MANDATORY_RESPONSE_FIELD = [
   "exam_id",
   "question_id",
   "answer_id",
   "user_id",
-  "confidence",
-  "comment",
+  "confidence"
 ];
 const { fetchUserIdFromToken } = require("../middleware/auth_validate");
 const { Types } = require("mongoose");
@@ -158,8 +157,8 @@ exports.createRespose = async (req, res, next) => {
   console.log("The body of the submitted answer: ")
   console.log(body, "Body");
   keys = Object.keys(body);
-  for (let index = 0; index < RESPONSE_FIELD.length; index++) {
-    const key = RESPONSE_FIELD[index];
+  for (let index = 0; index < MANDATORY_RESPONSE_FIELD.length; index++) {
+    const key = MANDATORY_RESPONSE_FIELD[index];
 
     if (!keys.includes(key) || !body[key]) {
       console.log(key);
