@@ -153,7 +153,6 @@ exports.createExam = async (req, res, next) => {
   console.log(keys, "This is dflka");
   for (let index = 0; index < EXAM_FIELDS.length; index++) {
     const key = EXAM_FIELDS[index];
-    // console.log(!body[key]);
     if(key != "difficulty")
     {
       if (!keys.includes(key) || !body[key]) {
