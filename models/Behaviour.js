@@ -10,6 +10,14 @@ const behaviourSchema = new Schema(
     user_id: {
       type: mongoose.Types.ObjectId,
     },
+    is_task_submitted: {
+      type: Boolean,
+      default: false
+    },
+    is_post_reflection_submitted: {
+      type: Boolean,
+      default: false
+    },
     pre_reflection: {
       familiarity: {
         type: String,

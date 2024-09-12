@@ -61,16 +61,75 @@ exports.createBehaviour = async (req, res, next) => {
   res.status(200).json({ sucess: true, behavoir });
 };
 
+
 exports.updateBehaviour = async (req, res, next) => {
-  console.log(req.body.behavour_id);
+  try {
+    // Extract the behaviour_id from the request body
+    const { behaviour_id } = req.body;
+
+    console.log("Value of is_task_submitted: ", req.body.is_task_submitted )
+
+    if (!behaviour_id) {
+      return res.status(400).json({ success: false, message: "behaviour_id is required" });
+    }
+
+    // Prepare the fields to update from the request body
+    const updateFields = {
+      post_reflection_difficulty: req.body.post_reflection_difficulty,
+      post_reflection_interest: req.body.post_reflection_interest,
+      post_reflection_helpfulness: req.body.post_reflection_helpfulness,
+      is_task_submitted: req.body.is_task_submitted,
+      is_post_reflection_submitted: req.body.is_post_reflection_submitted,  // New field for post-reflection submission
+    
+    };
+
+    // Remove undefined fields (if any field is not provided in the body)
+    Object.keys(updateFields).forEach((key) => {
+      if (updateFields[key] === undefined) {
+        delete updateFields[key];
+      }
+    });
+
+    // Update behaviour document based on behaviour_id
+    const updatedBehaviour = await BehaviourModel.updateOne(
+      { _id: Types.ObjectId(behaviour_id) },  // Match by behaviour_id
+      { $set: updateFields }  // Set the fields that need updating
+    );
+
+    console.log("Update Fields: ", updateFields);  // Check if is_task_submitted is present here
+    console.log("Updated Behaviour Result:", updatedBehaviour);
+
+
+    // Check if any document was modified
+    if (updatedBehaviour.nModified > 0) {
+      const updatedBehaviourData = await BehaviourModel.findById(behaviour_id);
+      return res.status(200).json({
+        success: true,
+        message: "Behaviour updated successfully",
+        updatedBehaviour: updatedBehaviourData
+      });
+    } else {
+      return res.status(400).json({ success: false, message: "No behaviour found or updated" });
+    }
+  } catch (error) {
+    console.error("Error updating behaviour: ", error);
+    return res.status(500).json({ success: false, message: "Server error", error });
+  }
+};
+
+
+exports.updateBehaviourTaskSubmission = async (req, res, next) => {
+
+  const userId = await fetchUserIdFromToken(req.headers.authorization.split(" ")[1]);
+  let examID = req.query.exam_id;
+
+  console.log("Submit Task's backend call...................")
   const Behaviour = await BehaviourModel.updateOne(
-    { _id: Types.ObjectId(req.body.behavour_id) },
-    { $set: { post_reflection_difficulty: req.body.post_reflection_difficulty,
-              post_reflection_interest: req.body.post_reflection_interest,
-              post_reflection_helpfulness: req.body.post_reflection_helpfulness,
-     } }
+    { exam_id: Types.ObjectId(examID), user_id: Types.ObjectId(userId) },
+    { $set: { is_task_completed: req.body.is_task_completed
+    }}
   );
 
-  console.log(req.body, Behaviour);
+  console.log("After updating is_task_submitted", req.body, Behaviour);
   res.status(200).json({ sucess: true, Behaviour });
 };
