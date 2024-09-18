@@ -118,18 +118,36 @@ exports.updateBehaviour = async (req, res, next) => {
 };
 
 
-exports.updateBehaviourTaskSubmission = async (req, res, next) => {
+// Delete all behaviour entries for a user based on exam_id and user_id
+exports.deleteUserBehaviour = async (req, res, next) => {
+  try {
+    const userId = await fetchUserIdFromToken(req.headers.authorization.split(" ")[1]);
+    const examId = req.body.exam_id;
 
-  const userId = await fetchUserIdFromToken(req.headers.authorization.split(" ")[1]);
-  let examID = req.query.exam_id;
+    // Check if exam_id is provided
+    if (!examId) {
+      return res.status(400).json({
+        success: false,
+        message: "exam_id is required",
+      });
+    }
 
-  console.log("Submit Task's backend call...................")
-  const Behaviour = await BehaviourModel.updateOne(
-    { exam_id: Types.ObjectId(examID), user_id: Types.ObjectId(userId) },
-    { $set: { is_task_completed: req.body.is_task_completed
-    }}
-  );
+    // Delete Behaviour entries for the user and exam
+    await BehaviourModel.deleteMany({
+      exam_id: Types.ObjectId(examId),
+      user_id: Types.ObjectId(userId),
+    });
 
-  console.log("After updating is_task_submitted", req.body, Behaviour);
-  res.status(200).json({ sucess: true, Behaviour });
+    return res.status(200).json({
+      success: true,
+      message: "User behaviour deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting user behaviour:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error,
+    });
+  }
 };

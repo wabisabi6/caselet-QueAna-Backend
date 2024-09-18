@@ -4,15 +4,16 @@ const {
   createBehaviour,
   updateBehaviour,
   getUserBehaviour,
-  updateBehaviourTaskSubmission
+  deleteUserBehaviour,
 } = require("../controllers/Behaviour");
 
 var router = express.Router();
+const { checkAuth } = require("../middleware/auth_validate");
 
 // Not needed
 // POST '/auth/signup'
 router.get("/fetch", getUserBehaviour);
 router.post("/create", createBehaviour);
 router.patch("/update", updateBehaviour);
-router.patch("/updateTaskSubmission", updateBehaviourTaskSubmission);
+router.delete("/delete_user_behaviour", checkAuth, deleteUserBehaviour);
 module.exports = router;

@@ -171,3 +171,38 @@ exports.createRespose = async (req, res, next) => {
   const response = await ResponseModel.create(body);
   res.status(200).json({ sucess: true, response });
 };
+
+// Delete all responses for a user based on exam_id and user_id
+exports.deleteUserResponses = async (req, res, next) => {
+  try {
+    const userId = await fetchUserIdFromToken(req.headers.authorization.split(" ")[1]);
+    const examId = req.body.exam_id;
+
+    // Check if exam_id is provided
+    if (!examId) {
+      return res.status(400).json({
+        success: false,
+        message: "exam_id is required",
+      });
+    }
+
+    // Delete Response entries for the user and exam
+    await ResponseModel.deleteMany({
+      exam_id: Types.ObjectId(examId),
+      user_id: Types.ObjectId(userId),
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "User responses deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting user responses:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error,
+    });
+  }
+};
+
