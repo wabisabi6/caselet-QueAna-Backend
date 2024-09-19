@@ -4,9 +4,7 @@ const {
   createQuestions,
   getQuestionById,
   getExamQuestion,
-  getExamQuestionResult,
-  updateQuestionReflection,
-  getQuestionReflection,
+  getExamQuestionResult
 } = require("../controllers/Questions");
 const { checkAuth } = require("../middleware/auth_validate");
 
@@ -19,7 +17,5 @@ router.post("/create", createQuestions);
 router.get("/question", getQuestionById);
 router.get("/get_user_question", checkAuth, getExamQuestion);
 router.get("/get_user_question_result", checkAuth, getExamQuestionResult);
-router.post('/updateQuestionReflection', checkAuth, updateQuestionReflection);
-router.get('/getQuestionReflection', getQuestionReflection);
 
 module.exports = router;

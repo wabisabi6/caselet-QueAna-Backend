@@ -96,44 +96,6 @@ exports.updateImagesForQuestion = async (req, res, next) => {
   );
 };
 
-exports.updateQuestionReflection = async (req, res, next) => {
-  try {
-    const { question_id, post_reflection_explanation_understanding, post_reflection_explanation_clarity } = req.body;
-
-    const updateFields = {};
-
-    if (post_reflection_explanation_understanding) {
-      updateFields['post_reflection_explanation_understanding'] = post_reflection_explanation_understanding;
-    }
-
-    if (post_reflection_explanation_clarity) {
-      updateFields['post_reflection_explanation_clarity'] = post_reflection_explanation_clarity;
-    }
-
-    const result = await QuestionsModel.updateOne(
-      { _id: Types.ObjectId(question_id) },
-      { $set: updateFields }
-    );
-
-    res.status(200).json({ success: true, result });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: "An error occurred while updating the question reflection." });
-  }
-};
-
-exports.getQuestionReflection = async (req, res, next) => {
-  try {
-    const { question_id } = req.query;
-    const question = await QuestionsModel.findById(question_id).select('post_reflection_explanation_understanding post_reflection_explanation_clarity');
-    res.status(200).json({ success: true, question });
-  } catch (error) {
-    console.error(error);
-    res.status (500).json({ success: false, message: "An error occurred while fetching the question reflection." });
-  }
-};
-
-
 exports.getExamQuestion = async (req, res, next) => {
   const userId = await fetchUserIdFromToken(
     req.headers.authorization.split(" ")[1]
