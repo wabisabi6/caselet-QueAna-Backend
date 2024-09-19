@@ -206,3 +206,142 @@ exports.deleteUserResponses = async (req, res, next) => {
   }
 };
 
+
+exports.updateQuestionReflection = async (req, res, next) => {
+  try {    
+    const user_id = await fetchUserIdFromToken(req.headers.authorization.split(" ")[1]);
+    
+    const { question_id, exam_id, post_reflection_explanation_understanding, post_reflection_explanation_clarity } = req.body;
+
+    const updateFields = {};
+
+    if (post_reflection_explanation_understanding !== undefined) {
+      updateFields['post_reflection_explanation_understanding'] = post_reflection_explanation_understanding;
+    }
+
+    if (post_reflection_explanation_clarity !== undefined) {
+      updateFields['post_reflection_explanation_clarity'] = post_reflection_explanation_clarity;
+    }
+
+    const result = await ResponseModel.updateOne(
+      { question_id: Types.ObjectId(question_id), user_id: Types.ObjectId(user_id), exam_id: Types.ObjectId(exam_id) },
+      { $set: updateFields },
+      { upsert: true } // Create the document if it doesn't exist
+    );
+
+    res.status(200).json({ success: true, result });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "An error occurred while updating the question reflection." });
+  }
+};
+
+
+exports.deleteQuestionReflection = async (req, res, next) => {
+  try {
+    const user_id = await fetchUserIdFromToken(req.headers.authorization.split(" ")[1]);
+    const { exam_id} = req.body;
+
+    // Find all question reflections by both exam_id and user_id and delete them
+    const result = await ResponseModel.updateMany(
+      { exam_id: Types.ObjectId(exam_id), user: Types.ObjectId(user_id) },
+      {
+        $unset: {
+          post_reflection_explanation_understanding: "",
+          post_reflection_explanation_clarity: ""
+        }
+      }
+    );
+
+    // If no documents were modified, return a 404 response
+    if (result.nModified === 0) {
+      return res.status(404).json({ success: false, message: "No reflections found for the given exam and user." });
+    }
+
+    // Return a success response
+    res.status(200).json({ success: true, message: "Reflections deleted successfully for all questions in the exam." });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "An error occurred while deleting the question reflections." });
+  }
+};
+
+
+exports.getQuestionReflection = async (req, res, next) => {
+  try {    
+    const user_id = await fetchUserIdFromToken(req.headers.authorization.split(" ")[1]);
+    const { question_id, exam_id } = req.query;
+
+    const question = await ResponseModel.findOne({
+      question_id: Types.ObjectId(question_id),
+      user_id: Types.ObjectId(user_id),
+      exam_id: Types.ObjectId(exam_id)
+    }).select('post_reflection_explanation_understanding post_reflection_explanation_clarity');
+    
+    // Check if the question reflection exists
+    if (!question) {
+      return res.status(404).json({ success: false, message: "Question reflection not found for the given user and exam." });
+    }
+
+    res.status(200).json({ success: true, question });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "An error occurred while fetching the question reflection." });
+  }
+};
+
+exports.getPostReflectionPerQuestionStatus = async (req, res, next) => {
+  try {
+    const user_id = await fetchUserIdFromToken(req.headers.authorization.split(" ")[1]);
+    const { question_id, exam_id } = req.query;
+
+    // Find the response by user, question, and exam
+    const response = await ResponseModel.findOne({
+      user_id: Types.ObjectId(user_id),
+      question_id: Types.ObjectId(question_id),
+      exam_id: Types.ObjectId(exam_id)
+    });
+    // Return the status of post reflection
+    return res.status(200).json({
+      success: true,
+      is_post_reflection_per_question_submitted: response.is_post_reflection_per_question_submitted
+    });
+  } catch (error) {
+    console.error("Error fetching post reflection status:", error);
+    return res.status(500).json({ success: false, message: "An error occurred while fetching post reflection status." });
+  }
+};
+
+// Controller to update the post reflection status
+exports.updatePostReflectionPerQuestionStatus = async (req, res, next) => {
+  try {    
+    const user_id = await fetchUserIdFromToken(req.headers.authorization.split(" ")[1]);
+
+    const {question_id, exam_id, is_post_reflection_per_question_submitted } = req.body;
+
+    // Find the response by user, question, and exam and update the post reflection status
+    const result = await ResponseModel.updateOne(
+      {
+        user_id: Types.ObjectId(user_id),
+        question_id: Types.ObjectId(question_id),
+        exam_id: Types.ObjectId(exam_id),
+      },
+      { $set: { is_post_reflection_per_question_submitted } },
+      { upsert: true } // Create a new response if it doesn't exist
+    );
+
+    if (!result) {
+      return res.status(404).json({ success: false, message: "Failed to update the response." });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Post reflection status updated successfully.",
+      result,
+    });
+  } catch (error) {
+    console.error("Error updating post reflection status:", error);
+    return res.status(500).json({ success: false, message: "An error occurred while updating post reflection status." });
+  }
+};
+
