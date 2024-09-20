@@ -31,7 +31,9 @@ const userLogSchema = new Schema(
         "Answer option",
         "Navigating from",
         "Navigated to",
-        "Logout"
+        "Logout",
+        "Final Score",
+        "Retake test"
       ],
     },
     action: {
