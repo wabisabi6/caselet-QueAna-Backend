@@ -33,7 +33,8 @@ const userLogSchema = new Schema(
         "Navigated to",
         "Logout",
         "Final Score",
-        "Retake test"
+        "Retake test",
+        "Question Score"
       ],
     },
     action: {
