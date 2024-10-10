@@ -25,6 +25,7 @@ const userLogSchema = new Schema(
         "Login",
         "Pre-Reflection",
         "Post-Reflection",
+        "Post-Reflection-Per-Question",
         "Confidence",
         "Answer Option",
         "Comment",
