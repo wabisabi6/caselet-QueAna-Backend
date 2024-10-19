@@ -1,6 +1,6 @@
 const { fetchUserIdFromToken } = require("../middleware/auth_validate");
 const UserlogModel = require("../models/Userlog");
-const LOG_FIELD = ["exam_id", "type", "action", "timestamp", "page"];
+const LOG_FIELD = ["type", "action", "timestamp", "page"];
 
 exports.fetcLogsOfUser = async (req, res, next) => {
   const search = await UserlogModel.find();
@@ -21,9 +21,7 @@ exports.createLog = async (req, res, next) => {
   for (let index = 0; index < LOG_FIELD.length; index++) {
     const key = LOG_FIELD[index];
 
-    // console.log(!body[key]);
     if (!keys.includes(key) || !body[key]) {
-      //   console.log(key);
       return res
         .status(400)
         .json({ sucess: false, body: `${key} not found, please enter it ` });
