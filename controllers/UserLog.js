@@ -1,6 +1,6 @@
 const { fetchUserIdFromToken } = require("../middleware/auth_validate");
 const UserlogModel = require("../models/Userlog");
-const LOG_FIELD = ["type", "action", "timestamp", "page"];
+const LOG_FIELD = ["exam_id", "type", "action", "timestamp", "page"];
 
 exports.fetcLogsOfUser = async (req, res, next) => {
   const search = await UserlogModel.find();
