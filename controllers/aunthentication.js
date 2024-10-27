@@ -149,6 +149,39 @@ exports.loginController = async (req, res, next) => {
   }
 };
 
+//POST 'auth/reset-password'
+exports.resetPasswordController = async (req, res, next) => {
+  const { identifier, new_password } = req.body;
+
+  if (!identifier || !new_password) {
+    return res.status(400).json({ success: false, message: 'Email/Username and new password are required.' });
+  }
+
+  try {
+    // Find the user by either email or username
+    const user = await User.findOne({
+      $or: [{ email: identifier }, { username: identifier }],
+    });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found.' });
+    }
+
+    // Hash the new password and save it
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(new_password, salt);
+
+    user.password = hashedPassword;
+    await user.save();
+
+    return res.status(200).json({ success: true, message: 'Password successfully reset.' });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Server error, please try again later.' });
+  }
+};
+
+
+
 //Check if user is logged in
 exports.protected = (req, res, next) => {
   if (req.session.currentUser) {
