@@ -1,6 +1,7 @@
 var express = require("express");
 const {
   getBehaviour,
+  saveCommentsDataSummary,
   createBehaviour,
   updateBehaviour,
   getUserBehaviour,
@@ -16,4 +17,5 @@ router.get("/fetch", getUserBehaviour);
 router.post("/create", createBehaviour);
 router.patch("/update", updateBehaviour);
 router.delete("/delete_user_behaviour", checkAuth, deleteUserBehaviour);
+router.post('/saveCommentsDataSummary', saveCommentsDataSummary);
 module.exports = router;
