@@ -18,6 +18,14 @@ const behaviourSchema = new Schema(
       type: Boolean,
       default: false
     },
+    comments_data_summary: {
+      type: String,
+      default: ""
+    },
+    comments_problem_context: {
+      type: String,
+      default: ""
+    },
     pre_reflection: {
       familiarity: {
         type: String,

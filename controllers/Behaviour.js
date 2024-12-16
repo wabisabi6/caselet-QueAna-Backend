@@ -32,6 +32,73 @@ exports.getUserBehaviour = async (req, res, next) => {
   res.status(200).json({ success: true, behaviour });
 };
 
+exports.saveCommentsDataSummary = async (req, res) => {
+  try {
+    const userId = await fetchUserIdFromToken(
+      req.headers.authorization.split(" ")[1]
+    );
+
+    const { exam_id, comments_data_summary } = req.body;
+
+    // Validate required fields
+    if (!exam_id || !comments_data_summary) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Exam ID and comments are required." });
+    }
+
+    // Update or create the behaviour document
+    const updatedBehaviour = await BehaviourModel.findOneAndUpdate(
+      { exam_id, user_id: userId },
+      { $set: { comments_data_summary } },
+      { new: true, upsert: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Comments data summary updated successfully",
+      behaviour: updatedBehaviour,
+    });
+  } catch (error) {
+    console.error("Error saving comments data summary:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+exports.saveCommentsProblemContext = async (req, res) => {
+  try {
+    const userId = await fetchUserIdFromToken(
+      req.headers.authorization.split(" ")[1]
+    );
+
+    const { exam_id, comments_problem_context } = req.body;
+
+    // Validate required fields
+    if (!exam_id || !comments_problem_context) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Exam ID and problem context are required." });
+    }
+
+    // Update or create the behaviour document
+    const updatedBehaviour = await BehaviourModel.findOneAndUpdate(
+      { exam_id, user_id: userId },
+      { $set: { comments_problem_context } },
+      { new: true, upsert: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Problem context updated successfully",
+      behaviour: updatedBehaviour,
+    });
+  } catch (error) {
+    console.error("Error saving problem context:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+
 exports.createBehaviour = async (req, res, next) => {
   let body = req.body;
   const userId = await fetchUserIdFromToken(
@@ -57,8 +124,14 @@ exports.createBehaviour = async (req, res, next) => {
     }
   }
 
-  const behavoir = await BehaviourModel.create(body);
-  res.status(200).json({ sucess: true, behavoir });
+  const behaviour = await BehaviourModel.findOneAndUpdate(
+    { exam_id: body.exam_id, user_id: body.user_id },
+    { $set: body },
+    { upsert: true, new: true }
+  );
+
+  //const behavoir = await BehaviourModel.create(body);
+  res.status(200).json({ sucess: true, behaviour });
 };
 
 
