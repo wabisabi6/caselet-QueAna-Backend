@@ -14,7 +14,10 @@ const scheduledExamSchema = new Schema(
     selectedExamId: {
       type: mongoose.Types.ObjectId,
       ref: "exam"  // Reference the Exam model
-    }
+    },
+    selectedUserIds: [{
+      type: mongoose.Types.ObjectId,
+    }]
   },
   {
     timestamps: {
