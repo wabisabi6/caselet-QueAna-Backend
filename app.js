@@ -21,6 +21,7 @@ const answerRouter = require("./routes/answer");
 const userLogRouter = require("./routes/UserLog");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
+const llmRoutes = require("./routes/llm"); // Added LLM routes
 var bodyParser = require("body-parser");
 dotenv.config({ path: ".env" });
 
@@ -32,7 +33,10 @@ var app = express();
 
 // Connecting to DB
 connection = connectDB();
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:8000",
+  methods: ["GET","PUT","POST","DELETE"],
+}));
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
@@ -70,6 +74,7 @@ app.use("/service/answer", answerRouter);
 app.use("/service/response", responseRouter);
 // app.use("/search", searchRouter);
 app.use("/service/log", userLogRouter);
+app.use("/service/llm", llmRoutes);   // Added LLM routes
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

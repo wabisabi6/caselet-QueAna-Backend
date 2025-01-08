@@ -3,7 +3,6 @@ const Schema = mongoose.Schema;
 
 const userLogSchema = new Schema(
   {
-    // behaviour String,
     exam_id: {
       type: mongoose.Types.ObjectId,
     },
@@ -35,7 +34,8 @@ const userLogSchema = new Schema(
         "Logout",
         "Final Score",
         "Retake test",
-        "Question Score"
+        "Question Score",
+        "LLM-Search", // Ensure this is included
       ],
     },
     action: {
@@ -46,9 +46,16 @@ const userLogSchema = new Schema(
     answer_id: {
       type: mongoose.Types.ObjectId,
     },
-
     timestamp: {
       type: Date,
+    },
+    llm_query: {
+      type: String, // To store the user's query sent to the LLM
+      default: null,
+    },
+    llm_response: {
+      type: String, // To store the LLM's response
+      default: null,
     },
   },
   {
@@ -59,10 +66,8 @@ const userLogSchema = new Schema(
   }
 );
 
-const UserlogModel = mongoose.model("user_log", userLogSchema);
+// Use mongoose.models to avoid OverwriteModelError
+const UserlogModel =
+  mongoose.models.user_log || mongoose.model("user_log", userLogSchema);
 
 module.exports = UserlogModel;
-
-
-//Navigation : From, to with timestamp (User_id, practice_id, )
-//Page Activity: User Input, Input field name, input field value

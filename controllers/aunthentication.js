@@ -181,7 +181,6 @@ exports.resetPasswordController = async (req, res, next) => {
 };
 
 
-
 //Check if user is logged in
 exports.protected = (req, res, next) => {
   if (req.session.currentUser) {
