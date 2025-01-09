@@ -119,6 +119,49 @@ exports.getScheduledExam = async (req, res, next) => {
 
 };
 
+exports.getScheduledExamsById = async (req, res, next) => {
+  try {
+    const { practiceId } = req.body;
+
+    // Validate input
+    if (!practiceId) {
+      return res.status(400).json({ success: false, message: "Practice ID is required" });
+    }
+
+    // Find the ScheduledExam and populate the associated Exam
+    const practice = await ScheduledExamModel.findById(practiceId).populate("selectedExamId");
+
+    // If no practice is found, return a 404 error
+    if (!practice) {
+      return res.status(404).json({ success: false, message: "Practice not found" });
+    }
+
+    // Prepare the response data
+    const associatedExam = practice.selectedExamId
+      ? {
+          _id: practice.selectedExamId._id,
+          name: practice.selectedExamId.name,
+          duration: practice.selectedExamId.duration,
+          difficulty: practice.selectedExamId.difficulty,
+          total_questions: practice.selectedExamId.total_questions,
+          problem_context: practice.selectedExamId.problem_context,
+          data_summary: practice.selectedExamId.data_summary,
+          start_time: practice.start_time,
+          end_time: practice.end_time,
+        }
+      : null;
+
+    return res.status(200).json({
+      success: true,
+      exams: associatedExam ? [associatedExam] : [],
+    });
+  } catch (error) {
+    console.error("Error fetching exams by practice ID:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+
 exports.getScheduledExamsList = async (req, res, next) => {
   const exam = await ScheduledExamModel.find();
   return res.status(200).json({ sucess: true, exam });
@@ -129,20 +172,33 @@ exports.scheduleExam = async (req, res, next) => {
   try {
     const { examName, selectedExamId, start_time, end_time } = req.body;
     
-    const newScheduledExam = new ScheduledExamModel({
+    // Validation for input fields
+    if (!selectedExamId || !start_time || !end_time) {
+      return res.status(400).json({
+          success: false,
+          body: "Please provide all required fields: selectedExamId, start_time, end_time",
+      });
+    }
+
+    const newPractice = new ScheduledExamModel({
         name: examName,
         start_time: new Date(start_time),
         end_time: new Date(end_time),
         selectedExamId: selectedExamId
     });
 
-    await newScheduledExam.save();
+    await newPractice.save();
 
-    res.status(200).json({ success: true});
-    } catch (error) {
-        console.error('Error creating scheduled exam:', error);
-        res.status(500).json({ message: "Failed to create scheduled exam", error: error.message });
-    }
+    return res.status(200).json({
+      success: true,
+      message: "Practice scheduled successfully.",
+      practiceId: newPractice._id, // Returning the practice ID to the client
+    });
+
+  } catch (error) {
+      console.error('Error creating scheduled exam:', error);
+      res.status(500).json({ message: "Failed to create scheduled exam", error: error.message });
+  }
 };
 
 exports.createExam = async (req, res, next) => {
