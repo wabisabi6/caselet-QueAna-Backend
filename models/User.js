@@ -13,6 +13,11 @@ const userSchema = new Schema({
     type: String,
     required: false,
   },
+  currentPracticeId: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'scheduledExam', 
+    default: null 
+  },
 });
 
 const User = mongoose.model("users", userSchema);
