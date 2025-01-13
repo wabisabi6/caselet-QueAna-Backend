@@ -13,7 +13,9 @@ const saltRounds = 10;
 exports.signUpController = (req, res, next) => {
   // 2 - Destructure the password and username
   console.log("Req body backend:", req.body);
-  const { username, password, full_name } = req.body;
+  const { username, password, full_name, practiceId } = req.body;
+
+  console.log("The current Practice Id derived from body in backend signup controller, ", practiceId);
 
   if (username == undefined) {
     return res.status(200).json({ success: false });
@@ -27,7 +29,6 @@ exports.signUpController = (req, res, next) => {
     });
     return;
   }
-  console.log("asdsajdlk");
 
   // 4 - Check if the username already exists - if so send error
 
@@ -47,9 +48,16 @@ exports.signUpController = (req, res, next) => {
       const salt = bcrypt.genSaltSync(saltRounds);
       const hashedPassword = bcrypt.hashSync(password, salt);
 
-      // > Create the user in the DB
+      const userObj = {
+        username,
+        password: hashedPassword,
+        full_name,
+        currentPracticeId: practiceId || null,
+      };
 
-      User.create({ username, password: hashedPassword, full_name })
+      console.log("Object being passed to User.create:", userObj);
+
+      User.create(userObj)
         .then((newUserObj) => {
           let jwtSecretKey = process.env.SESSION_SECRET;
           let data = {
@@ -60,7 +68,6 @@ exports.signUpController = (req, res, next) => {
             date: new Date(),
           };
 
-          console.log("INsdsadsklj");
           const token = jwt.sign(data, jwtSecretKey);
           // save user token
 
@@ -79,18 +86,53 @@ exports.signUpController = (req, res, next) => {
     .catch((err) => console.log(err));
 };
 
-exports.getUserInfo = async (req, res, next) => {
-  const user = await User.find({ _id: req.query.user_id });
-  if (user.length == 0) {
-    return res.status(401).json({ success: false });
+exports.updatePracticeId = async (req, res) => {
+  const { userId, practiceId } = req.body;
+
+  if (!userId) {
+    return res.status(400).json({ success: false, errorMessage: "User ID is required." });
   }
 
-  return res.status(200).json({ success: true, user: user[0] });
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, errorMessage: "User not found." });
+    }
+
+    user.currentPracticeId = practiceId || null; // Update or clear the practiceId
+    await user.save();
+
+    res.status(200).json({ success: true, message: "Practice ID updated successfully." });
+  } catch (error) {
+    console.error("Error updating practiceId:", error);
+    res.status(500).json({ success: false, errorMessage: "Internal server error." });
+  }
+};
+
+
+
+exports.getUserInfo = async (req, res, next) => {
+  const user = await User.find({ _id: req.query.user_id });
+  if (!user) {
+    return res.status(404).json({ success: false, message: "User not found." });
+  }
+
+  // return res.status(200).json({ success: true, user: user[0] });
+  return res.status(200).json({
+    success: true,
+    user: {
+      id: user[0]._id,
+      username: user[0].username,
+      email: user[0].email,
+      full_name: user[0].full_name,
+      currentPracticeId: user[0].currentPracticeId, // Include the current practice ID
+    }
+  })
 };
 // POST 'auth/login'
 exports.loginController = async (req, res, next) => {
   // Deconstruct the password and the user
-  const { username, password: enteredPassword } = req.body;
+  const { username, password: enteredPassword, practiceId } = req.body;
 
   // Check if username or password are empty strings
   if (username === "" || enteredPassword === "") {
@@ -98,11 +140,7 @@ exports.loginController = async (req, res, next) => {
       success: false,
       errorMessage: "Username and password not found!",
     });
-    return;
   }
-
-  console.log("The  APple");
-  // Find the user by username
 
   console.log("username", username);
   const user_list = await User.find({ username: username });
@@ -115,7 +153,6 @@ exports.loginController = async (req, res, next) => {
   }
 
   let userData = user_list[0];
-
   const hashedPasswordFromDB = userData.password; // Hashed password saved in DB during signup
 
   const passwordCorrect = bcrypt.compareSync(
@@ -126,6 +163,9 @@ exports.loginController = async (req, res, next) => {
   if (passwordCorrect) {
     // Save the login in the session ( and create cookie )
     // And redirect the user
+      console.log("Saving practiceId to the user:", practiceId);
+      userData.currentPracticeId = practiceId;
+      await userData.save();
 
     let jwtSecretKey = process.env.SESSION_SECRET;
     let data = {
@@ -133,14 +173,16 @@ exports.loginController = async (req, res, next) => {
       email: userData.username,
       full_name: userData.full_name,
       username: userData.username,
+      currentPracticeId: userData.currentPracticeId,
       date: new Date(),
     };
+
 
     const token = jwt.sign(data, jwtSecretKey);
     // save user token
 
     return res.json({ success: true, token: token, username: data.username, 
-                      full_name: data.full_name, user_id: data.user_id });
+                      full_name: data.full_name, user_id: data.user_id, currentPracticeId: data.currentPracticeId, });
   } else {
     return res.status(401).json({
       success: false,
@@ -177,6 +219,38 @@ exports.resetPasswordController = async (req, res, next) => {
     return res.status(200).json({ success: true, message: 'Password successfully reset.' });
   } catch (error) {
     return res.status(500).json({ success: false, message: 'Server error, please try again later.' });
+  }
+};
+
+exports.getPracticeIdController = async (req, res, next) => {
+  const { userId } = req.query; // Expecting userId as a query parameter
+
+  if (!userId) {
+    return res.status(400).json({
+      success: false,
+      message: "User ID is required to fetch practice ID.",
+    });
+  }
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      currentPracticeId: user.currentPracticeId || null,
+    });
+  } catch (error) {
+    console.error("Error fetching practice ID:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch practice ID. Please try again later.",
+    });
   }
 };
 

@@ -5,6 +5,7 @@ const {
   getExamDetails,
   deleteExam,
   getScheduledExam,
+  getScheduledExamsById,
   getScheduledExamsList,
   scheduleExam,
 } = require("../controllers/Exam");
@@ -22,5 +23,6 @@ router.get("/schedule", checkAuth, getScheduledExam);
 
 //newly added scheduleExam
 router.post("/scheduleExam", scheduleExam)
+router.post("/getScheduledExamsById", getScheduledExamsById)
 router.get("/getScheduledExamsList", getScheduledExamsList)
 module.exports = router;
