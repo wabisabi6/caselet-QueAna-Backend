@@ -81,43 +81,50 @@ exports.getExamDetails = async (req, res, next) =>
 };
 
 exports.getScheduledExam = async (req, res, next) => {
+  try 
+  {
+    const now = new Date();
+    const scheduledExams = await ScheduledExamModel.find({
+      start_time: { $lte: now },
+      end_time: { $gte: now }
+    })
+    .populate('selectedExamIds') // Populate the array of exams
+    .exec();
 
-  const now = new Date();
+    // Process the scheduled exams
+    const exams = scheduledExams.flatMap(se => { // Use flatMap to handle multiple exams per practice
+      if (se.selectedExamIds && se.selectedExamIds.length > 0) {
+        return se.selectedExamIds.map(exam => ({
+          _id: exam._id,              // Exam ID
+          name: exam.name,            // Exam name
+          duration: exam.duration,    // Exam duration
+          difficulty: exam.difficulty, // Exam difficulty
+          total_questions: exam.total_questions, // Total questions
+          problem_context: exam.problem_context, // Problem context
+          data_summary: exam.data_summary,       // Data summary
+          start_time: se.start_time,  // Practice start time
+          end_time: se.end_time       // Practice end time
+        }));
+      } else {
+        console.warn('Scheduled exam with no associated exams:', se._id);
+        return []; // Return an empty array for practices with no associated exams
+      }
+    });
+    // Return the response
+    return res.status(200).json({
+      success: true,
+      exams
+    });
+  }
+  catch (error) {
+    console.error('Error fetching scheduled exams:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error fetching scheduled exams'
+    });
+  }
 
-  ScheduledExamModel.find({
-    start_time: { $lte: now },
-    end_time: { $gte: now }
-  })
-  .populate('selectedExamId')
-  .exec((err, scheduledExams) => {
-    if (err) {
-      console.error('Error fetching scheduled exams:', err);
-      return res.status(500).json({ success: false, message: 'Error fetching scheduled exams' });
-    } else {
-      console.log('Scheduled Exams:', scheduledExams);
-
-      const exams = scheduledExams.map(se => {
-        if (se.selectedExamId) {
-          return {
-            _id: se.selectedExamId._id,  // Directly use _id from the populated Exam
-            name: se.selectedExamId.name,
-            start_time: se.start_time,
-            end_time: se.end_time,
-            // Add other fields from either the scheduled exam or the populated exam as needed
-          };
-        } else {
-          console.warn('Scheduled exam with missing selectedExamId:', se._id);
-          return null;
-        }
-      }).filter(exam => exam !== null);  // Filter out any null values
-      
-      // Assuming you want to return all exams
-      console.log('Exam Details:', exams);
-      return res.status(200).json({ success: true, exams });
-    }
-  });
-
-};
+}
 
 exports.getScheduledExamsById = async (req, res, next) => {
   try {
@@ -129,31 +136,29 @@ exports.getScheduledExamsById = async (req, res, next) => {
     }
 
     // Find the ScheduledExam and populate the associated Exam
-    const practice = await ScheduledExamModel.findById(practiceId).populate("selectedExamId");
+    const practice = await ScheduledExamModel.findById(practiceId).populate("selectedExamIds");
 
     // If no practice is found, return a 404 error
     if (!practice) {
       return res.status(404).json({ success: false, message: "Practice not found" });
     }
 
-    // Prepare the response data
-    const associatedExam = practice.selectedExamId
-      ? {
-          _id: practice.selectedExamId._id,
-          name: practice.selectedExamId.name,
-          duration: practice.selectedExamId.duration,
-          difficulty: practice.selectedExamId.difficulty,
-          total_questions: practice.selectedExamId.total_questions,
-          problem_context: practice.selectedExamId.problem_context,
-          data_summary: practice.selectedExamId.data_summary,
-          start_time: practice.start_time,
-          end_time: practice.end_time,
-        }
-      : null;
+    // Prepare the response data for all associated exams
+    const associatedExams = practice.selectedExamIds.map((exam) => ({ // UPDATED: Map through `selectedExamIds` array
+      _id: exam._id,
+      name: exam.name,
+      duration: exam.duration,
+      difficulty: exam.difficulty,
+      total_questions: exam.total_questions,
+      problem_context: exam.problem_context,
+      data_summary: exam.data_summary,
+      start_time: practice.start_time, // Add practice details
+      end_time: practice.end_time,
+    }));
 
     return res.status(200).json({
       success: true,
-      exams: associatedExam ? [associatedExam] : [],
+      exams: associatedExams,
     });
   } catch (error) {
     console.error("Error fetching exams by practice ID:", error);
@@ -164,27 +169,28 @@ exports.getScheduledExamsById = async (req, res, next) => {
 
 exports.getScheduledExamsList = async (req, res, next) => {
   const exam = await ScheduledExamModel.find();
-  return res.status(200).json({ sucess: true, exam });
+  console.log("Data from ScheduledExamModel: ", exam)
+  return res.status(200).json({ success: true, exam });
 };
 
 //Get list of exams
 exports.scheduleExam = async (req, res, next) => {
   try {
-    const { examName, selectedExamId, start_time, end_time } = req.body;
+    const { practiceName, selectedExamIds, start_time, end_time } = req.body;
     
     // Validation for input fields
-    if (!selectedExamId || !start_time || !end_time) {
+    if (!practiceName || !selectedExamIds || selectedExamIds.length === 0 || !start_time || !end_time) {
       return res.status(400).json({
           success: false,
-          body: "Please provide all required fields: selectedExamId, start_time, end_time",
+          body: "Please provide all required fields: selectedExamIds (array), start_time, end_time",
       });
     }
 
     const newPractice = new ScheduledExamModel({
-        name: examName,
+        practiceName: practiceName,
         start_time: new Date(start_time),
         end_time: new Date(end_time),
-        selectedExamId: selectedExamId
+        selectedExamIds: selectedExamIds
     });
 
     await newPractice.save();
@@ -206,7 +212,6 @@ exports.createExam = async (req, res, next) => {
 
   let body = req.body;
   keys = Object.keys(body);
-  console.log(keys, "This is dflka");
   for (let index = 0; index < EXAM_FIELDS.length; index++) {
     const key = EXAM_FIELDS[index];
     if(key != "difficulty")

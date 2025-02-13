@@ -4,17 +4,19 @@ require('./Exams');
 
 const scheduledExamSchema = new Schema(
   {
-    name: String,
+    practiceName: String,
     start_time: {
       type: Date,
     },
     end_time: {
       type: Date,
     },
-    selectedExamId: {
-      type: mongoose.Types.ObjectId,
-      ref: "exam"  // Reference the Exam model
-    }
+    selectedExamIds: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "exam"  // Reference the Exam model
+      }
+    ],
   },
   {
     timestamps: {
