@@ -50,6 +50,10 @@ const userLogSchema = new Schema(
     timestamp: {
       type: Date,
     },
+
+    notes_content: { type: String, default: '' },
+    previous_content: { type: String, default: '' },
+    deleted: { type: Boolean, default: false },
   },
   {
     timestamps: {

@@ -224,3 +224,72 @@ exports.deleteUserBehaviour = async (req, res, next) => {
     });
   }
 };
+
+// exports.saveRunningNotes = async (req, res) => {
+//   const { exam_id, running_notes } = req.body;
+//   const behaviour = await BehaviourModel.findOne({ exam_id });
+//   if (!behaviour) return res.status(404).json({ errorMessage: "Not found" });
+  
+//   behaviour.running_notes = behaviour.running_notes
+//     ? behaviour.running_notes + "\n\n" + running_notes
+//     : running_notes;
+//   await behaviour.save();
+//   res.json({ success: true });
+// };
+
+
+exports.saveRunningNotes = async (req, res) => {
+  console.log("Save Notes called from backend");
+  try {
+    // 1️⃣ Get & verify the JWT => userId
+    const token  = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Missing Authorization header" });
+    }
+    const userId = await fetchUserIdFromToken(token);
+
+    console.log("User Id found: ", userId)
+
+    // 2️⃣ Pull exam_id & running_notes from the body
+    const { exam_id, running_notes } = req.body;
+    if (!exam_id) {
+      return res
+        .status(400)
+        .json({ success: false, message: "exam_id is required" });
+    }
+
+    // 3️⃣ Find this user’s behaviour doc
+    const behaviour = await BehaviourModel.findOne({ 
+      exam_id,
+      user_id: userId
+    });
+    if (!behaviour) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Behaviour record not found" });
+    }
+
+    // 4️⃣ Append or set the running_notes field
+    // behaviour.running_notes = behaviour.running_notes
+    //   ? behaviour.running_notes + running_notes
+    //   : running_notes;
+
+    behaviour.running_notes = running_notes;
+
+    console.log("Current value of running notes: ", behaviour.running_notes)
+
+    // 5️⃣ Save & reply
+    await behaviour.save();
+    return res.json({ success: true, running_notes: behaviour.running_notes });
+
+  } catch (err) {
+    console.error("Error in saveRunningNotes:", err);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
+  }
+};
+
+

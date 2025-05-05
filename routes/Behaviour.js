@@ -7,6 +7,7 @@ const {
   updateBehaviour,
   getUserBehaviour,
   deleteUserBehaviour,
+  saveRunningNotes,
 } = require("../controllers/Behaviour");
 
 var router = express.Router();
@@ -20,4 +21,5 @@ router.patch("/update", updateBehaviour);
 router.delete("/delete_user_behaviour", checkAuth, deleteUserBehaviour);
 router.post('/saveCommentsDataSummary', saveCommentsDataSummary);
 router.post('/saveCommentsProblemContext', saveCommentsProblemContext);
+router.post('/saveRunningNotes', saveRunningNotes);
 module.exports = router;
