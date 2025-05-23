@@ -23,13 +23,13 @@ exports.getUserBehaviour = async (req, res, next) => {
   });
 
   console.log(examID, userId, "DS");
-  if (behaviour.length == 0) {
-    return res.status(400).json({
-      success: false,
-      message: "Reflection Required",
-    });
-  }
-  res.status(200).json({ success: true, behaviour });
+  // if (behaviour.length == 0) {
+  //   return res.status(400).json({
+  //     success: false,
+  //     message: "Reflection Required",
+  //   });
+  // }
+  return res.status(200).json({ success: true, behaviour });
 };
 
 exports.saveCommentsDataSummary = async (req, res) => {
@@ -225,18 +225,6 @@ exports.deleteUserBehaviour = async (req, res, next) => {
   }
 };
 
-// exports.saveRunningNotes = async (req, res) => {
-//   const { exam_id, running_notes } = req.body;
-//   const behaviour = await BehaviourModel.findOne({ exam_id });
-//   if (!behaviour) return res.status(404).json({ errorMessage: "Not found" });
-  
-//   behaviour.running_notes = behaviour.running_notes
-//     ? behaviour.running_notes + "\n\n" + running_notes
-//     : running_notes;
-//   await behaviour.save();
-//   res.json({ success: true });
-// };
-
 
 exports.saveRunningNotes = async (req, res) => {
   console.log("Save Notes called from backend");
@@ -261,34 +249,34 @@ exports.saveRunningNotes = async (req, res) => {
     }
 
     // 3️⃣ Find this user’s behaviour doc
-    const behaviour = await BehaviourModel.findOne({ 
-      exam_id,
-      user_id: userId
+    const updatedBehaviour = await BehaviourModel.findOneAndUpdate( 
+     {
+        // match on both exam and user
+        exam_id: Types.ObjectId(exam_id),
+        user_id: Types.ObjectId(userId),
+      },
+      {
+        $set: { running_notes },
+      },
+      {
+        new: true,    // return the updated doc
+        upsert: true, // create if not found
+      }
+    );
+        
+    console.log("Current value of running notes: ", updatedBehaviour.running_notes);
+
+    // 4️⃣ Reply
+    return res.json({
+      success: true,
+      running_notes: updatedBehaviour.running_notes,
     });
-    if (!behaviour) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Behaviour record not found" });
-    }
-
-    // 4️⃣ Append or set the running_notes field
-    // behaviour.running_notes = behaviour.running_notes
-    //   ? behaviour.running_notes + running_notes
-    //   : running_notes;
-
-    behaviour.running_notes = running_notes;
-
-    console.log("Current value of running notes: ", behaviour.running_notes)
-
-    // 5️⃣ Save & reply
-    await behaviour.save();
-    return res.json({ success: true, running_notes: behaviour.running_notes });
 
   } catch (err) {
     console.error("Error in saveRunningNotes:", err);
     return res
       .status(500)
-      .json({ success: false, message: "Internal server error" });
+      .json({ success: false, message: "Internal Server Error" });
   }
 };
 
