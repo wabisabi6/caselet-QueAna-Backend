@@ -10,6 +10,10 @@ const userLogSchema = new Schema(
     question_id: {
       type: mongoose.Types.ObjectId,
     },
+    question_no:  { 
+      type: Number, 
+      default: null 
+    },
     page: { type: String },
     user_id: {
       type: mongoose.Types.ObjectId,
@@ -49,7 +53,7 @@ const userLogSchema = new Schema(
 
     timestamp: {
       type: Date,
-    },
+    }
   },
   {
     timestamps: {

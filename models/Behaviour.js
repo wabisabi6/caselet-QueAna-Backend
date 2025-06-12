@@ -56,6 +56,11 @@ const behaviourSchema = new Schema(
       type: String,
       default: "",
     },
+    running_notes: { 
+      type: String, 
+      default: "" 
+    },
+
   },
   {
     timestamps: {

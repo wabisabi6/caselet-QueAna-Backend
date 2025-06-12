@@ -23,13 +23,13 @@ exports.getUserBehaviour = async (req, res, next) => {
   });
 
   console.log(examID, userId, "DS");
-  if (behaviour.length == 0) {
-    return res.status(400).json({
-      success: false,
-      message: "Reflection Required",
-    });
-  }
-  res.status(200).json({ success: true, behaviour });
+  // if (behaviour.length == 0) {
+  //   return res.status(400).json({
+  //     success: false,
+  //     message: "Reflection Required",
+  //   });
+  // }
+  return res.status(200).json({ success: true, behaviour });
 };
 
 exports.saveCommentsDataSummary = async (req, res) => {
@@ -224,3 +224,60 @@ exports.deleteUserBehaviour = async (req, res, next) => {
     });
   }
 };
+
+
+exports.saveRunningNotes = async (req, res) => {
+  console.log("Save Notes called from backend");
+  try {
+    // 1️⃣ Get & verify the JWT => userId
+    const token  = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Missing Authorization header" });
+    }
+    const userId = await fetchUserIdFromToken(token);
+
+    console.log("User Id found: ", userId)
+
+    // 2️⃣ Pull exam_id & running_notes from the body
+    const { exam_id, running_notes } = req.body;
+    if (!exam_id) {
+      return res
+        .status(400)
+        .json({ success: false, message: "exam_id is required" });
+    }
+
+    // 3️⃣ Find this user’s behaviour doc
+    const updatedBehaviour = await BehaviourModel.findOneAndUpdate( 
+     {
+        // match on both exam and user
+        exam_id: Types.ObjectId(exam_id),
+        user_id: Types.ObjectId(userId),
+      },
+      {
+        $set: { running_notes },
+      },
+      {
+        new: true,    // return the updated doc
+        upsert: true, // create if not found
+      }
+    );
+        
+    console.log("Current value of running notes: ", updatedBehaviour.running_notes);
+
+    // 4️⃣ Reply
+    return res.json({
+      success: true,
+      running_notes: updatedBehaviour.running_notes,
+    });
+
+  } catch (err) {
+    console.error("Error in saveRunningNotes:", err);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+
