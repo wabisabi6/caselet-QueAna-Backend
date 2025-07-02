@@ -103,6 +103,7 @@ exports.getScheduledExam = async (req, res, next) => {
             name: se.selectedExamId.name,
             start_time: se.start_time,
             end_time: se.end_time,
+            require_post_reflection: se.require_post_reflection
             // Add other fields from either the scheduled exam or the populated exam as needed
           };
         } else {
@@ -148,6 +149,7 @@ exports.getScheduledExamsById = async (req, res, next) => {
           data_summary: practice.selectedExamId.data_summary,
           start_time: practice.start_time,
           end_time: practice.end_time,
+          require_post_reflection: practice.require_post_reflection,
         }
       : null;
 
@@ -170,7 +172,7 @@ exports.getScheduledExamsList = async (req, res, next) => {
 //Get list of exams
 exports.scheduleExam = async (req, res, next) => {
   try {
-    const { examName, selectedExamId, start_time, end_time } = req.body;
+    const { examName, selectedExamId, start_time, end_time, require_post_reflection} = req.body;
     
     // Validation for input fields
     if (!selectedExamId || !start_time || !end_time) {
@@ -184,7 +186,8 @@ exports.scheduleExam = async (req, res, next) => {
         name: examName,
         start_time: new Date(start_time),
         end_time: new Date(end_time),
-        selectedExamId: selectedExamId
+        selectedExamId: selectedExamId,
+        require_post_reflection: !!require_post_reflection,
     });
 
     await newPractice.save();
