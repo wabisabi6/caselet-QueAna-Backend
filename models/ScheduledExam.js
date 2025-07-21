@@ -14,7 +14,11 @@ const scheduledExamSchema = new Schema(
     selectedExamId: {
       type: mongoose.Types.ObjectId,
       ref: "exam"  // Reference the Exam model
-    }
+    },
+    require_post_reflection: { 
+      type: Boolean, 
+      default: false 
+    },
   },
   {
     timestamps: {
