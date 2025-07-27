@@ -42,6 +42,18 @@ const behaviourSchema = new Schema(
       skills: {
         type: String,
         default: "",
+      },
+      mobilization: {
+        type: String,
+        default: "",
+      },
+      isolation: {
+        type: String,
+        default: "",
+      },
+      relevance: {
+        type: String,
+        default: "",
       }
     },
     post_reflection_difficulty: {

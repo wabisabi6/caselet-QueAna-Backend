@@ -5,7 +5,11 @@ const BEHAVIOUR_FIELDS = ["exam_id",
   "pre_reflection.familiarity",
   "pre_reflection.frequency",
   "pre_reflection.competence",
-  "pre_reflection.skills"];
+  "pre_reflection.skills",
+  "pre_reflection.mobilization",
+  "pre_reflection.isolation",
+  "pre_reflection.relevance",
+];
 
 exports.getUserBehaviour = async (req, res, next) => {
   const userId = await fetchUserIdFromToken(
