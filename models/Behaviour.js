@@ -68,6 +68,10 @@ const behaviourSchema = new Schema(
       type: String,
       default: "",
     },
+    post_reflection_mobilization: { type: String, default: "" },
+    post_reflection_isolation:    { type: String, default: "" },
+    post_reflection_relevance:    { type: String, default: "" },
+    post_reflection_proximity:    { type: String, default: "" },
     running_notes: { 
       type: String, 
       default: "" 
